@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light only">
+<title>Happy Birthday, My Love ✨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="audio" href="assets/audio/music.mp3">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<audio id="bgm" src="assets/audio/music.mp3" loop preload="auto"></audio>
+
+<div class="music-toggle-container music-off" id="music-btn" onclick="toggleMusic()">
+    <div class="toggle-switch" id="toggle-switch-bg">
+        <svg class="music-icon" id="music-icon" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+    </div>
+    <span class="toggle-text" id="toggle-text">Music: OFF</span>
+</div>
+
+<img src="assets/img/bg-ornament-corner.png" alt="ornament" class="ornament-tl">
+<img src="assets/img/ribbon-heart.png" alt="heart" class="ornament-br">
+<div class="copyright">Made with ♥ &copy; Aprilhxn</div>
+
+<!-- ========== PAGE 1: HOME ========== -->
+<div id="page-home" class="page active">
+    <div id="screen-countdown" class="content-wrapper">
+    <h1 class="title-elegant fade-up-el delay-1">Every second with you is a blessing</h1>
+    <p class="subtitle fade-up-el delay-2">Counting down to your special day</p>
+    <div class="countdown-grid fade-up-el delay-3" id="secret-trigger">
+        <div class="time-box"><span id="cd-days">00</span><label>Days</label></div>
+        <div class="time-box"><span id="cd-hours">00</span><label>Hours</label></div>
+        <div class="time-box"><span id="cd-mins">00</span><label>Minutes</label></div>
+        <div class="time-box"><span id="cd-secs">00</span><label>Seconds</label></div>
+    </div>
+    <p class="time-passed fade-up-el delay-4" id="time-passed-text">Calculating...</p>
+</div>
+
+    <div id="screen-lock" style="display:none;" class="content-wrapper">
+        <div class="lock-box">
+            <div class="lock-icon">🔒</div>
+            <h2>Welcome To The Special Page 🖤</h2>
+            <p>Enter the password to unlock the surprise.</p>
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="Password..." autocomplete="off">
+            </div>
+            <button class="btn-gold" onclick="checkPassword()">Unlock</button>
+            <p class="hint-text" id="hint-text">Hint: The word you hear every day.</p>
+        </div>
+    </div>
+
+    <div id="screen-home" style="display:none;" class="content-wrapper">
+        <div class="particles-container" id="particles-container"></div>
+        <div class="home-content">
+            <h1 class="home-title">Happy Birthday,<br>My Love!</h1>
+            <p class="home-subtitle">Choose a surprise to open</p>
+            <div class="menu-grid">
+                <div class="menu-btn" onclick="goTo('candle')"><span>Blow the Candle</span> <img src="assets/img/icon-lilin.png" class="menu-icon" alt="Candle"></div>
+                <div class="menu-btn" onclick="goTo('gift')"><span>Open the Gift</span> <img src="assets/img/icon-kado.png" class="menu-icon" alt="Gift"></div>
+                <div class="menu-btn" onclick="goTo('memori')"><span>Our Memories</span> <img src="assets/img/icon-memori.png" class="menu-icon" alt="Memory"></div>
+                <div class="menu-btn" onclick="goTo('surat')"><span>Love Letter</span> <img src="assets/img/icon-surat.png" class="menu-icon" alt="Letter"></div>
+                <a href="penutup.html" class="menu-btn" onclick="saveMusicBeforeLeave()"><span>Closing Song</span> <img src="assets/img/icon-penutup.png" class="menu-icon" alt="Song"></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== PAGE 2: TIUP LILIN ========== -->
+<div id="page-candle" class="page">
+    <a onclick="goTo('home')" class="back-btn">Back &#8594;</a>
+    <div class="container">
+        <div class="instruction">
+            <h2 id="title-text">Ready to celebrate?</h2>
+            <p id="desc-text">Light up the candle first</p>
+        </div>
+        <div class="cake-area">
+            <img src="assets/img/cake.png" alt="Cake" class="cake-img">
+            <div class="glow-effect" id="glow"></div>
+            <div class="candle-wrapper">
+                <img src="assets/img/candle.png" alt="Candle" class="candle-img">
+                <img src="assets/img/flame.png" alt="Flame" class="flame-img" id="flame">
+                <img src="assets/img/smoke.png" alt="Smoke" class="smoke-img" id="smoke">
+            </div>
+        </div>
+        <button class="action-btn" id="action-btn">
+            <span id="btn-text">Light the Candle</span>
+            <div class="btn-progress" id="btn-progress"></div>
+        </button>
+    </div>
+    <div class="flash-overlay" id="flash-overlay"></div>
+    <div class="congrats-overlay" id="congrats">
+        <div class="congrats-box">
+            <h1>Happy Birthday!</h1>
+            <p>Your wish has been sent to the stars. May this year bring you endless joy, love, and beautiful moments. I love you, Sayang.</p>
+            <button class="btn-home" onclick="goTo('home')">Back to Home</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== PAGE 3: BUKA KADO ========== -->
+<div id="page-gift" class="page">
+    <a onclick="goTo('home')" class="back-btn">Back &#8594;</a>
+    <div class="love-text-container" id="love-text-container">
+        <h1>LOVE<br>U</h1>
+    </div>
+    <div class="container">
+        <div class="instruction" id="instruction-text">
+            <h2 id="title-text-gift">A gift for you</h2>
+            <p id="desc-text-gift">Tap the box to open it</p>
+        </div>
+        <div class="gift-area" id="gift-trigger">
+            <div class="glow-effect" id="glow-gift"></div>
+            <img src="assets/img/gift-closed.png" alt="Gift" class="gift-img" id="gift-img">
+            <img src="assets/img/rose-bucket.png" alt="Roses" class="rose-img" id="rose-img">
+        </div>
+    </div>
+    <div class="continue-btn-container" id="btn-next-gift">
+        <button onclick="goTo('memori')" class="btn-continue">Next Surprise &#8594;</button>
+    </div>
+</div>
+
+<!-- ========== PAGE 4: MEMORI ========== -->
+<div id="page-memori" class="page">
+    <a onclick="goTo('home')" class="back-btn">Back &#8594;</a>
+    <div class="content-wrapper">
+        <h2 class="section-title">Our Little Moments</h2>
+        <p class="section-sub">photobooth &amp; memories</p>
+        <p class="strip-hint">Tap a strip to open it ✨</p>
+        <div class="strip-gallery" id="stripGallery"></div>
+        <div class="continue-btn-container-memori">
+            <button onclick="goTo('surat')" class="btn-continue-memori">Next Surprise &#8594;</button>
+        </div>
+    </div>
+
+    <div class="strip-stage" id="stripStage">
+        <button class="strip-close" id="stripClose" aria-label="Close">✕</button>
+        <div class="strip-large" id="stripLarge"></div>
+    </div>
+    <div class="lightbox" id="lightbox">
+        <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+        <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">‹</button>
+        <img id="lightboxImg" src="" alt="">
+        <button class="lb-nav lb-next" id="lbNext" aria-label="Next">›</button>
+        <p id="lightboxCap"></p>
+        <p class="lb-counter" id="lbCounter"></p>
+    </div>
+</div>
+
+<!-- ========== PAGE 5: SURAT ========== -->
+<div id="page-surat" class="page">
+    <a onclick="goTo('home')" class="back-btn">Back &#8594;</a>
+    <div class="screen-flash" id="goldFlash"></div>
+    <div class="dust-container" id="dustContainer"></div>
+    <div class="stage" id="mainStage">
+        <div id="header-area">
+            <h2 class="section-title">A Letter For You</h2>
+            <p class="section-sub">written with love & sincerity</p>
+        </div>
+        <div class="letter-container">
+            <div id="envelope-area" style="display:flex;flex-direction:column;align-items:center;">
+                <div class="env-wrapper" id="envelopeBtn">
+                    <img src="assets/img/envelope-closed.png" class="env-img" id="envClosed" alt="Envelope Closed">
+                    <img src="assets/img/envelope-open.png" class="env-img" id="envOpen" alt="Envelope Open">
+                </div>
+                <p class="tap-hint" id="tapHint">Tap to open 💌</p>
+            </div>
+            <div class="letter-paper-wrap" id="letterPaper">
+                <img src="assets/img/ornament-flower.png" class="paper-flower" alt="ornament">
+                <div class="letter-content">
+                    <p class="letter-date reveal-on-scroll">For you, today & always</p>
+                    <h3 class="letter-greeting reveal-on-scroll">To My Dearest,</h3>
+                    <div class="letter-body">
+                        <p class="reveal-on-scroll">Happy birthday. I wanted to write something that goes beyond just "I love you" — because my feelings for you run much deeper than those three words can carry.</p>
+                        <p class="reveal-on-scroll">I know the world isn't always easy. Life demands a lot from us, and sometimes we face days that feel heavy. But I want you to know, with absolute certainty, that I am here. I am working hard, not just for my own dreams, but for a future where you are safe, happy, and at peace. I will always fight for us. I will always strive to be the man who protects your heart and supports your growth.</p>
+                        <p class="reveal-on-scroll">You are my home, and my greatest blessing. So today, on your special day, I want to leave you with a few reminders to carry with you:</p>
+                    </div>
+                    <div class="affirmation-box reveal-on-scroll">
+                        <h4>A little reminder for you</h4>
+                        <ul>
+                            <li>You are deeply loved, exactly as you are.</li>
+                            <li>Your feelings are valid, and you are heard.</li>
+                            <li>You don't have to carry the weight of the world alone.</li>
+                            <li>Your strength inspires me, but it's okay to rest.</li>
+                            <li>You are my safe place, and I promise to be yours.</li>
+                        </ul>
+                    </div>
+                    <div class="letter-body">
+                        <p class="reveal-on-scroll">Thank you for being you. Thank you for staying, for trusting me, and for sharing this journey with me. May this year bring you endless peace, radiant health, and the fulfillment of every dream you hold close.</p>
+                    </div>
+                    <p class="letter-sign reveal-on-scroll">With all my love and devotion,<br><span id="signature">Your Man.</span></p>
+                </div>
+            </div>
+            <div class="continue-btn-container" id="btnContainer">
+                <a href="penutup.html" class="btn-continue" onclick="saveMusicBeforeLeave()">Next Surprise &#8594;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="assets/js/script.js"></script>
+</body>
+</html>

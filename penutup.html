@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light only">
+    <title>Closing Song 🎶</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Quicksand:wght@400;500;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root{ --cream: #fcf9f2; --blush: #e8b4b8; --gold: #c5a880; --text-dark: #4a403a; --glass: rgba(20, 15, 15, 0.6); }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html,body{height:100%; overflow:hidden;}
+        body{ font-family: 'Cormorant Garamond', serif; background-color: #000; color: #fff; display: flex; flex-direction: column; }
+
+        /* --- SPLASH SCREEN (HALAMAN PEMBUKA) --- */
+        #splash-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 1.5s ease, visibility 1.5s; padding: 20px; }
+        #splash-screen.hidden { opacity: 0; visibility: hidden; }
+        
+        #splash-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        
+        .splash-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 6vw, 3rem); color: var(--gold); text-align: center; margin-bottom: 40px; z-index: 1; text-shadow: 0 4px 15px rgba(0,0,0,0.8); line-height: 1.3; font-style: italic; }
+        
+        .splash-buttons { display: flex; flex-direction: column; gap: 15px; z-index: 1; width: 100%; max-width: 320px; }
+        @media(min-width: 600px) { .splash-buttons { flex-direction: row; max-width: 600px; justify-content: center; gap: 20px; } }
+        
+        .splash-btn { padding: 15px 30px; border-radius: 30px; font-family: 'Playfair Display', serif; font-size: 1.1rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); letter-spacing: 1px; }
+        
+        .btn-not-ready { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+        .btn-not-ready:hover { background: rgba(197, 168, 128, 0.15); box-shadow: 0 0 20px rgba(197, 168, 128, 0.4); transform: translateY(-3px); }
+        
+        .btn-ready { background: var(--gold); color: #000; border: 1px solid var(--gold); font-weight: 600; box-shadow: 0 0 15px rgba(197, 168, 128, 0.2); }
+        .btn-ready:hover { background: #d1b898; box-shadow: 0 0 30px rgba(197, 168, 128, 0.6); transform: translateY(-3px) scale(1.02); }
+
+        /* --- MAIN APP --- */
+        #main-app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #000; opacity: 0; transition: opacity 2s ease; }
+        #main-app.show { opacity: 1; }
+
+        #sky-bg { position: absolute; inset: 0; z-index: 0; transition: background 2s ease; }
+        .season-winter { background: linear-gradient(to bottom, #0b1320, #1a2a44 60%, #2a3b5c); }
+        .season-spring { background: linear-gradient(to bottom, #ffb7b2, #ffdac1 60%, #e2f0cb); }
+        .season-spring-dark { background: linear-gradient(to bottom, #6a7a8b, #8a9ba8 60%, #b0c0d0); } 
+        .season-summer { background: linear-gradient(to bottom, #ff9a9e, #fecfef 40%, #a1c4fd); }
+        .season-summer-dark { background: linear-gradient(to bottom, #4a5a6a, #6a7a8a 40%, #8a9aaa); } 
+        .season-autumn { background: linear-gradient(to bottom, #3e1f1a, #8b4a38 50%, #d98a53); }
+        .season-autumn-dark { background: linear-gradient(to bottom, #1f0f0a, #4a2a1f 50%, #6a3a2f); } 
+        .season-night { background: linear-gradient(to bottom, #050a15, #0f172a 60%, #1e293b); }
+        .season-black { background: #000; } 
+
+        #storm-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: rgba(0, 0, 0, 0.4); opacity: 0; transition: opacity 2s ease; }
+        #firework-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+        #bg-weather-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+
+        .album-art-container { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; opacity: 0; transform: translateY(50px); animation: fadeInUp 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 1s, breatheImage 4s ease-in-out infinite alternate 3s; }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        @keyframes breatheImage { 0% { transform: scale(1); } 100% { transform: scale(1.02) translateY(-5px); } }
+        .album-art-img { width: 100%; height: 100%; object-fit: cover; object-position: bottom center; filter: drop-shadow(0px -10px 20px rgba(0,0,0,0.5)); transition: filter 2s ease; }
+        .season-tint { position: absolute; inset: 0; z-index: 5; pointer-events: none; mix-blend-mode: overlay; opacity: 0.6; transition: background-color 2s ease; }
+
+        .epic-transition { position: absolute; inset: 0; pointer-events: none; z-index: 999; opacity: 0; transition: opacity 2s ease; }
+        .flash-effect { background: radial-gradient(circle, #fff 0%, #c5a880 40%, transparent 80%); mix-blend-mode: screen; transform: scale(0.5); }
+        .flash-effect.flash-spring { background: radial-gradient(circle, #fff 0%, #ffb7b2 40%, transparent 80%); }
+        .flash-effect.flash-summer { background: radial-gradient(circle, #fff 0%, #ff9a9e 40%, transparent 80%); }
+        .flash-effect.active { animation: cinematicFlash 1.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
+        @keyframes cinematicFlash { 0% { opacity: 0; transform: scale(0.5); } 20% { opacity: 1; transform: scale(1.5); } 50% { opacity: 0.8; transform: scale(2.5); } 100% { opacity: 0; transform: scale(3.5); } }
+        .shake-effect { animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeScreen { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+
+        .night-transition { position: absolute; inset: 0; background: #000; pointer-events: none; z-index: 998; opacity: 0; transition: opacity 2s ease; }
+        .lightning-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; z-index: 999; opacity: 0; }
+        .lightning-flash.active { animation: lightningStrike 0.8s ease-out forwards; }
+        @keyframes lightningStrike { 0% { opacity: 0; } 10% { opacity: 0.6; } 20% { opacity: 0.1; } 30% { opacity: 0.5; } 100% { opacity: 0; } }
+
+        .lyrics-container { position: absolute; top: 10%; left: 0; width: 100%; padding: 0 30px; text-align: center; z-index: 10; pointer-events: none; transition: opacity 1s ease; }
+        .lyric-text { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 5vw, 2.2rem); color: #fff; text-shadow: 0 4px 15px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3); opacity: 0; transform: translateY(20px); transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); line-height: 1.4; }
+        .lyric-text.active { opacity: 1; transform: translateY(0); }
+
+        .finale-text-container { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%) scale(0.8); text-align: center; z-index: 11; opacity: 0; visibility: hidden; transition: opacity 1.5s ease, visibility 1.5s, transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); width: 90%; }
+        .finale-text-container.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+        .finale-text { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 700; color: #c5a880; line-height: 1.2; animation: breathGlow 3s ease-in-out infinite alternate; }
+        @keyframes breathGlow { 0% { text-shadow: 1px 1px 1px rgba(252, 249, 242, 0.9), -1px -1px 1px rgba(168, 139, 100, 0.9), 0 0 10px rgba(197, 168, 128, 0.2), 0 0 20px rgba(232, 180, 184, 0.1); } 100% { text-shadow: 1px 1px 1px rgba(252, 249, 242, 0.9), -1px -1px 1px rgba(168, 139, 100, 0.9), 0 0 20px rgba(197, 168, 128, 0.6), 0 0 40px rgba(232, 180, 184, 0.4); } }
+
+        .player-container { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.1); border-radius: 25px 25px 0 0; padding: 20px 25px 30px; z-index: 20; box-shadow: 0 -10px 40px rgba(0,0,0,0.6); }
+        .player-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .song-info h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #fff; margin-bottom: 2px; }
+        .song-info p { font-family: 'Quicksand', sans-serif; font-size: 0.85rem; color: var(--gold); letter-spacing: 1px; }
+        .song-time { font-family: 'Quicksand', sans-serif; font-size: 0.85rem; color: #aaa; }
+        .progress-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-bottom: 20px; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--blush)); border-radius: 10px; width: 0%; position: relative; transition: width 0.1s linear; }
+        .progress-bar::after { content: ''; position: absolute; right: -5px; top: -3px; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px var(--gold); }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 25px; }
+        .btn-control { background: none; border: none; color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s; }
+        .btn-control svg { width: 28px; height: 28px; fill: currentColor; }
+        .btn-control:hover { color: var(--gold); }
+        .btn-play { width: 60px; height: 60px; background: var(--gold); border-radius: 50%; color: #000; box-shadow: 0 0 20px rgba(197, 168, 128, 0.4); }
+        .btn-play svg { width: 30px; height: 30px; }
+        .btn-play:hover { transform: scale(1.05); color: #000; background: #d1b898; }
+        .back-btn { position: fixed; top: 20px; right: 20px; text-decoration: none; color: var(--gold); font-size: 1.2rem; display: flex; align-items: center; gap: 5px; padding: 10px; z-index: 100; transition: transform 0.3s; text-shadow: 0 2px 5px rgba(0,0,0,0.8); cursor: pointer; }
+        .back-btn:hover { transform: translateX(5px); }
+    </style>
+</head>
+<body>
+    <!-- SPLASH SCREEN YANG BARU -->
+    <div id="splash-screen">
+        <canvas id="splash-canvas"></canvas>
+        <h2 class="splash-title">Baby, Are You Ready To Witness A Miracle?</h2>
+        <div class="splash-buttons">
+            <button class="splash-btn btn-not-ready" id="btnNotReady">No, I’m Not Ready Yet</button>
+            <button class="splash-btn btn-ready" id="startBtn">Yes, I’m ready</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="app-container">
+        <a href="index.html" class="back-btn">Back &#8594;</a>
+        <div class="epic-transition flash-effect" id="transition-flash"></div>
+        <div class="night-transition" id="night-transition"></div>
+        <div id="storm-overlay"></div>
+        <div class="lightning-flash" id="lightning-flash"></div>
+
+        <div id="sky-bg" class="season-winter"></div>
+        <canvas id="firework-canvas"></canvas>
+        <canvas id="bg-weather-canvas"></canvas>
+
+        <div class="album-art-container">
+            <img src="assets/img/bg-penutup.png" alt="Couple" class="album-art-img" id="album-img">
+            <div class="season-tint" id="season-tint"></div>
+        </div>
+
+        <div class="lyrics-container" id="lyrics-container">
+            <p class="lyric-text" id="lyric-text"></p>
+        </div>
+        <div class="finale-text-container" id="finale-text-container">
+            <h1 class="finale-text">Happy Birthday<br>Sayang</h1>
+        </div>
+
+        <div class="player-container">
+            <div class="player-header">
+                <div class="song-info">
+                    <h3>Kita Lewati Berdua</h3>
+                    <p>Overnight</p>
+                </div>
+                <div class="song-time">
+                    <span id="current-time">0:00</span> / <span id="total-time">3:59</span>
+                </div>
+            </div>
+            <div class="progress-bar-container" id="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="controls">
+                <button class="btn-control" id="btn-prev"><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
+                <button class="btn-control btn-play" id="btn-play">
+                    <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="icon-pause" style="display:none;" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button class="btn-control" id="btn-next"><svg viewBox="0 0 24 24"><path d="M11.5 8c2.65 0 5.05.99 6.9 2.6L22 7v9h-9l3.62-3.62c-1.39-1.16-3.16-1.88-5.12-1.88-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bgm" src="assets/audio/closing.mp3"></audio>
+
+    <script>
+        /* TIMESTAMPS PRESISI */
+        const T_SPRING = 59; const T_SPRING_MENDUNG = 70; const T_SPRING_RAIN = 74.9; const T_SPRING_DARK = 99;
+        const T_SUMMER = 119; const T_SUMMER_MENDUNG = 150; const T_SUMMER_RAIN = 155;
+        const T_AUTUMN = 179; const T_NIGHT_BLACK = 199; const T_NIGHT_STARS = 202;
+        
+        const audio = document.getElementById('bgm');
+        const splash = document.getElementById('splash-screen');
+        const mainApp = document.getElementById('main-app');
+        const skyBg = document.getElementById('sky-bg');
+        const stormOverlay = document.getElementById('storm-overlay');
+        const transitionFlash = document.getElementById('transition-flash');
+        const nightTransition = document.getElementById('night-transition');
+        const lightningFlash = document.getElementById('lightning-flash');
+        const lyricText = document.getElementById('lyric-text');
+        const finaleContainer = document.getElementById('finale-text-container');
+        const lyricsContainer = document.getElementById('lyrics-container');
+        const playBtn = document.getElementById('btn-play'); const iconPlay = document.getElementById('icon-play'); const iconPause = document.getElementById('icon-pause');
+        const prevBtn = document.getElementById('btn-prev'); const nextBtn = document.getElementById('btn-next');
+        const progressContainer = document.getElementById('progress-container'); const progressBar = document.getElementById('progress-bar');
+        const timeCurrent = document.getElementById('current-time'); const timeTotal = document.getElementById('total-time');
+        const albumImg = document.getElementById('album-img'); const seasonTint = document.getElementById('season-tint');
+
+        let lyrics = []; let currentLyricIndex = -1; let currentSeason = 'winter'; let isFinaleTriggered = false; let isTransitioning = false; let currentTintState = ''; 
+        const transitionTimes = [T_SPRING_MENDUNG, T_SPRING_RAIN, T_SPRING_DARK, T_SUMMER, T_SUMMER_MENDUNG, T_SUMMER_RAIN, T_AUTUMN, T_NIGHT_BLACK];
+
+        const imgSnow = new Image(); imgSnow.src = 'assets/img/snow-winter.png'; const imgPetal = new Image(); imgPetal.src = 'assets/img/petal-spring.png';
+        const imgSun = new Image(); imgSun.src = 'assets/img/sun-summer.png'; const imgLeaf = new Image(); imgLeaf.src = 'assets/img/leaf-autumn.png';
+        const imgCloud = new Image(); imgCloud.src = 'assets/img/cloud.png'; 
+
+        const fallbackLyrics = [ { time: 0, text: "..." }, { time: 10, text: "Kita lewati berdua..." }, { time: 20, text: "Suka dan duka bersama..." }, { time: 40, text: "Musim berganti, waktu berjalan..." }, { time: 70, text: "Namun kita tetap bertahan..." }, { time: 100, text: "Terima kasih untuk segalanya..." }, { time: 140, text: "Kamu adalah rumahku..." }, { time: 180, text: "Selamanya, Sayang." } ];
+
+        async function loadLyrics() {
+            try {
+                const response = await fetch('assets/audio/closing-lyrics.lrc');
+                if (response.ok) {
+                    const text = await response.text(); const parsed = parseLRC(text);
+                    if (parsed.length > 0) { lyrics = parsed; return; }
+                }
+            } catch (e) {}
+            lyrics = fallbackLyrics;
+        }
+
+        function parseLRC(text) {
+            const lines = text.split('\n'); const result = []; const regex = /\[(\d{2}):(\d{2}(?:\.\d+)?)\](.*)/;
+            for (let line of lines) {
+                const match = line.match(regex);
+                if (match) { const time = (parseInt(match[1]) * 60) + parseFloat(match[2]); const text = match[3].trim(); if (text) result.push({ time, text }); }
+            }
+            return result;
+        }
+
+        const fireworkCanvas = document.getElementById('firework-canvas'); const fCtx = fireworkCanvas.getContext('2d');
+        const bgWeatherCanvas = document.getElementById('bg-weather-canvas'); const wBgCtx = bgWeatherCanvas.getContext('2d');
+        
+        let cW, cH;
+        function resizeCanvas() { cW = fireworkCanvas.width = bgWeatherCanvas.width = window.innerWidth; cH = fireworkCanvas.height = bgWeatherCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+        let bgParticles = [], clouds = [], darkClouds = [], stars = [], shootingStars = [], bokehParticles = [];
+        let rainDrops = []; let rockets = [], fireworkParticles = [];
+        let animationFrameId; let lightningCooldown = 0;
+
+        function createRocket() {
+            const colors = ['255, 215, 0', '255, 105, 180', '255, 255, 255', '0, 255, 255'];
+            rockets.push({ x: Math.random() * cW * 0.8 + cW * 0.1, y: cH, targetY: Math.random() * (cH * 0.4) + cH * 0.1, vx: (Math.random() - 0.5) * 2, vy: -12, color: colors[Math.floor(Math.random() * colors.length)] });
+        }
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 60; i++) { const angle = Math.random() * Math.PI * 2, speed = Math.random() * 6 + 2; fireworkParticles.push({ x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1, decay: Math.random() * 0.015 + 0.015, size: Math.random() * 2 + 1, color: color }); }
+        }
+        function triggerLightning() { lightningFlash.classList.remove('active'); void lightningFlash.offsetWidth; lightningFlash.classList.add('active'); }
+
+        function initWeather() {
+            bgParticles = []; clouds = []; darkClouds = []; stars = []; shootingStars = []; bokehParticles = []; rainDrops = [];
+            for (let i = 0; i < 150; i++) { stars.push({ x: Math.random() * cW, y: Math.random() * (cH * 0.7), size: Math.random() * 1.5 + 0.5, alpha: Math.random(), twinkle: Math.random() * 0.05 + 0.01 }); }
+            for (let i = 0; i < 8; i++) { clouds.push({ x: Math.random() * cW, y: Math.random() * (cH * 0.4) + cH * 0.1, speed: Math.random() * 0.5 + 0.2, scale: Math.random() * 0.8 + 0.5 }); }
+            for (let i = 0; i < 5; i++) { darkClouds.push({ x: Math.random() * cW, y: Math.random() * (cH * 0.3) + cH * 0.05, speed: Math.random() * 0.2 + 0.1, scale: Math.random() * 0.4 + 0.3, alpha: 0 }); }
+        }
+        initWeather();
+
+        function renderLoop(time) {
+            const t = audio.currentTime; wBgCtx.clearRect(0, 0, cW, cH);
+            let nextTransition = null; for (let tt of transitionTimes) { if (t < tt) { nextTransition = tt; break; } }
+            let particleOpacity = 1;
+            if (nextTransition !== null && (nextTransition - t) <= 2) {
+                particleOpacity = Math.max(0, (nextTransition - t) / 2);
+                if (nextTransition - t < 0.1) { bgParticles = []; rainDrops = []; }
+            } else { particleOpacity = 1; }
+
+            let isRaining = false; let isMendung = false;
+            if (currentSeason === 'spring') { if (t >= T_SPRING_MENDUNG && t < T_SUMMER) isMendung = true; if (t >= T_SPRING_RAIN && t < T_SUMMER) isRaining = true; } 
+            else if (currentSeason === 'summer') { if (t >= T_SUMMER_MENDUNG && t < T_AUTUMN) isMendung = true; if (t >= T_SUMMER_RAIN && t < T_AUTUMN) isRaining = true; } 
+            else if (currentSeason === 'autumn') { if (t < T_NIGHT_BLACK) { isMendung = true; isRaining = true; } }
+
+            if (isMendung && imgCloud.complete) {
+                darkClouds.forEach(c => {
+                    if (c.alpha < 1) c.alpha += 0.02; c.x += c.speed; if (c.x > cW + 200) c.x = -200;
+                    const cw = 200 * c.scale; const ch = cw * (imgCloud.height / imgCloud.width);
+                    wBgCtx.save(); wBgCtx.filter = 'brightness(0.3) contrast(1.2) grayscale(0.5)'; wBgCtx.globalAlpha = c.alpha * particleOpacity; wBgCtx.drawImage(imgCloud, c.x, c.y, cw, ch); wBgCtx.restore();
+                });
+            } else { darkClouds.forEach(c => c.alpha = 0); }
+
+            if (isRaining && particleOpacity > 0) {
+                for(let i=0; i<5; i++) { rainDrops.push({ x: Math.random() * cW, y: -20, len: Math.random() * 20 + 10, vy: Math.random() * 15 + 20 }); }
+                rainDrops.forEach((r, i) => { r.y += r.vy; if (r.y > cH) { rainDrops.splice(i, 1); return; } wBgCtx.strokeStyle = `rgba(255,255,255,${0.6 * particleOpacity})`; wBgCtx.lineWidth = 1.5; wBgCtx.beginPath(); wBgCtx.moveTo(r.x, r.y); wBgCtx.lineTo(r.x, r.y + r.len); wBgCtx.stroke(); });
+                if (time > lightningCooldown && particleOpacity > 0.5) { if (Math.random() < 0.03) { triggerLightning(); lightningCooldown = time + 2000; } }
+            }
+
+            if (particleOpacity > 0) {
+                if (currentSeason === 'winter' && !isRaining) { if (Math.random() < 0.12) bgParticles.push({ type: 'snow', x: Math.random() * cW, y: -10, size: Math.random() * 1.5 + 0.8, vx: (Math.random() - 0.5) * 0.8, vy: Math.random() * 1 + 0.5 }); } 
+                if (currentSeason === 'spring' && !isRaining) { if (imgPetal.complete && Math.random() < 0.05) { bgParticles.push({ type: 'img', img: imgPetal, x: Math.random() * cW, y: -30, size: Math.random() * 15 + 15, vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 0.5 + 0.5, rot: Math.random() * 360, spin: (Math.random() - 0.5) * 1 }); } }
+                if (currentSeason === 'autumn' && !isRaining) { if (imgLeaf.complete && Math.random() < 0.05) { bgParticles.push({ type: 'img', img: imgLeaf, x: Math.random() * cW, y: -30, size: Math.random() * 20 + 20, vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 0.6 + 0.6, rot: Math.random() * 360, spin: (Math.random() - 0.5) * 1 }); } }
+                if (currentSeason === 'spring' && !isRaining) { if (Math.random() < 0.05) bokehParticles.push({ x: Math.random() * cW, y: cH + 20, size: Math.random() * 30 + 10, vx: (Math.random() - 0.5) * 0.5, vy: -Math.random() * 0.5 - 0.2, alpha: Math.random() * 0.5 + 0.2 }); }
+            }
+
+            bgParticles.forEach((p, index) => {
+                p.x += p.vx; p.y += p.vy; p.rot += p.spin; if (p.y > cH + 50) { bgParticles.splice(index, 1); return; }
+                if (p.type === 'snow') { wBgCtx.fillStyle = `rgba(255, 255, 255, ${0.9 * particleOpacity})`; wBgCtx.beginPath(); wBgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); wBgCtx.fill(); } 
+                else if (p.type === 'img' && p.img.complete) { wBgCtx.save(); wBgCtx.translate(p.x, p.y); wBgCtx.rotate(p.rot * Math.PI / 180); wBgCtx.globalAlpha = particleOpacity; wBgCtx.drawImage(p.img, -p.size/2, -p.size/2, p.size, p.size); wBgCtx.restore(); }
+            });
+
+            bokehParticles.forEach((b, index) => {
+                b.x += b.vx; b.y += b.vy; if (b.y < -50) { bokehParticles.splice(index, 1); return; }
+                wBgCtx.save(); wBgCtx.globalAlpha = b.alpha * particleOpacity;
+                const grad = wBgCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.size);
+                grad.addColorStop(0, 'rgba(255, 220, 220, 0.8)'); grad.addColorStop(1, 'rgba(255, 220, 220, 0)');
+                wBgCtx.fillStyle = grad; wBgCtx.beginPath(); wBgCtx.arc(b.x, b.y, b.size, 0, Math.PI * 2); wBgCtx.fill(); wBgCtx.restore();
+            });
+
+            if (currentSeason === 'summer' && !isRaining) {
+                if (imgSun.complete) {
+                    const progress = Math.max(0, Math.min(1, (t - T_SUMMER) / 60)); 
+                    const sunX = cW * 0.1 + (cW * 0.8) * progress;
+                    const sunY = cH * 0.4 - Math.sin(progress * Math.PI) * (cH * 0.2);
+                    const sunSize = Math.min(cW, cH) * 0.28; 
+                    let sunOpacity = 1; if (t >= T_SUMMER_MENDUNG) sunOpacity = Math.max(0, 1 - (t - T_SUMMER_MENDUNG) / 4); 
+                    if (sunOpacity > 0) { wBgCtx.save(); wBgCtx.globalAlpha = sunOpacity * particleOpacity; wBgCtx.translate(sunX, sunY); wBgCtx.rotate(time * 0.0002); wBgCtx.drawImage(imgSun, -sunSize/2, -sunSize/2, sunSize, sunSize); wBgCtx.restore(); }
+                }
+                clouds.forEach(c => {
+                    c.x += c.speed; if (c.x > cW + 200) c.x = -200;
+                    if (imgCloud.complete) { const cw = 150 * c.scale; const ch = cw * (imgCloud.height / imgCloud.width); wBgCtx.save(); wBgCtx.globalAlpha = 0.5 * particleOpacity; wBgCtx.drawImage(imgCloud, c.x, c.y, cw, ch); wBgCtx.restore(); }
+                });
+            }
+
+            if (currentSeason === 'night') {
+                wBgCtx.save(); wBgCtx.globalAlpha = 0.9;
+                const moonX = cW * 0.8, moonY = cH * 0.15, moonSize = 60;
+                const moonGlow = wBgCtx.createRadialGradient(moonX, moonY, moonSize*0.5, moonX, moonY, moonSize*2);
+                moonGlow.addColorStop(0, 'rgba(255, 255, 230, 0.6)'); moonGlow.addColorStop(1, 'rgba(255, 255, 230, 0)');
+                wBgCtx.fillStyle = moonGlow; wBgCtx.beginPath(); wBgCtx.arc(moonX, moonY, moonSize*2, 0, Math.PI*2); wBgCtx.fill();
+                wBgCtx.fillStyle = '#fffde7'; wBgCtx.beginPath(); wBgCtx.arc(moonX, moonY, moonSize, 0, Math.PI*2); wBgCtx.fill(); wBgCtx.restore();
+                stars.forEach(s => { s.alpha += s.twinkle; if (s.alpha > 1 || s.alpha < 0.2) s.twinkle *= -1; wBgCtx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`; wBgCtx.beginPath(); wBgCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2); wBgCtx.fill(); });
+                if (Math.random() < 0.02) { shootingStars.push({ x: Math.random() * cW, y: Math.random() * (cH * 0.3), vx: -Math.random() * 10 - 5, vy: Math.random() * 5 + 3, life: 1 }); }
+                shootingStars.forEach((ss, index) => {
+                    ss.x += ss.vx; ss.y += ss.vy; ss.life -= 0.02;
+                    wBgCtx.strokeStyle = `rgba(255, 255, 255, ${ss.life})`; wBgCtx.lineWidth = 2; wBgCtx.beginPath(); wBgCtx.moveTo(ss.x, ss.y); wBgCtx.lineTo(ss.x - ss.vx * 3, ss.y - ss.vy * 3); wBgCtx.stroke();
+                    wBgCtx.fillStyle = `rgba(255, 255, 255, ${ss.life})`; wBgCtx.beginPath(); wBgCtx.arc(ss.x, ss.y, 2, 0, Math.PI * 2); wBgCtx.fill();
+                    if (ss.life <= 0) shootingStars.splice(index, 1);
+                });
+            }
+
+            fCtx.clearRect(0, 0, cW, cH);
+            if (isFinaleTriggered && Math.random() < 0.08) createRocket();
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                const r = rockets[i]; r.x += r.vx; r.y += r.vy;
+                fCtx.beginPath(); fCtx.moveTo(r.x, r.y); fCtx.lineTo(r.x - r.vx, r.y - r.vy + 15); fCtx.strokeStyle = `rgba(${r.color}, 0.8)`; fCtx.lineWidth = 2; fCtx.stroke();
+                if (r.y <= r.targetY) { createExplosion(r.x, r.y, r.color); rockets.splice(i, 1); }
+            }
+            for (let i = fireworkParticles.length - 1; i >= 0; i--) {
+                const p = fireworkParticles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.vx *= 0.98; p.life -= p.decay;
+                fCtx.beginPath(); fCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); fCtx.fillStyle = `rgba(${p.color}, ${p.life})`; fCtx.shadowBlur = 8; fCtx.shadowColor = `rgb(${p.color})`; fCtx.fill();
+                if (p.life <= 0) fireworkParticles.splice(i, 1);
+            }
+            fCtx.shadowBlur = 0;
+            animationFrameId = requestAnimationFrame(renderLoop);
+        }
+
+        function applyTint(state) {
+            if (!albumImg || !seasonTint) return;
+            if (state === 'winter') { albumImg.style.filter = 'brightness(0.8) contrast(1.1) sepia(0.3) hue-rotate(180deg)'; seasonTint.style.backgroundColor = 'rgba(50, 100, 200, 0.5)'; } 
+            else if (state === 'spring') { albumImg.style.filter = 'brightness(1.1) contrast(1.05) sepia(0.2) hue-rotate(-20deg)'; seasonTint.style.backgroundColor = 'rgba(255, 150, 180, 0.4)'; } 
+            else if (state === 'cloudy') { albumImg.style.filter = 'brightness(0.7) contrast(1.1) grayscale(0.4)'; seasonTint.style.backgroundColor = 'rgba(100, 100, 110, 0.5)'; } 
+            else if (state === 'dark-rain') { albumImg.style.filter = 'brightness(0.4) contrast(1.2) grayscale(0.6) sepia(0.2)'; seasonTint.style.backgroundColor = 'rgba(20, 30, 40, 0.7)'; } 
+            else if (state === 'summer') { albumImg.style.filter = 'brightness(1.2) contrast(1.05) sepia(0.2) hue-rotate(-10deg)'; seasonTint.style.backgroundColor = 'rgba(255, 200, 100, 0.4)'; } 
+            else if (state === 'autumn') { albumImg.style.filter = 'brightness(0.9) contrast(1.1) sepia(0.5) hue-rotate(330deg)'; seasonTint.style.backgroundColor = 'rgba(255, 100, 50, 0.5)'; } 
+            else if (state === 'night') { albumImg.style.filter = 'brightness(0.4) contrast(1.2) sepia(0.2) hue-rotate(200deg)'; seasonTint.style.backgroundColor = 'rgba(10, 20, 50, 0.8)'; }
+        }
+
+        function triggerEpicTransition(newSeason) {
+            if (isTransitioning) return; isTransitioning = true; mainApp.classList.add('shake-effect');
+            if (newSeason === 'spring') { transitionFlash.className = `epic-transition flash-effect flash-spring active`; setTimeout(() => { transitionFlash.className = 'epic-transition flash-effect'; isTransitioning = false; }, 1600); } 
+            else if (newSeason === 'summer') { transitionFlash.className = `epic-transition flash-effect flash-summer active`; setTimeout(() => { transitionFlash.className = 'epic-transition flash-effect'; isTransitioning = false; }, 1600); } 
+            else { isTransitioning = false; }
+        }
+
+        function updateTime() {
+            const t = audio.currentTime, duration = audio.duration || 239;
+            progressBar.style.width = `${(t / duration) * 100}%`; timeCurrent.innerText = formatTime(t);
+
+            let season = 'winter';
+            if (t >= T_SPRING && t < T_SUMMER) season = 'spring'; else if (t >= T_SUMMER && t < T_AUTUMN) season = 'summer'; else if (t >= T_AUTUMN && t < T_NIGHT_BLACK) season = 'autumn'; else if (t >= T_NIGHT_BLACK && t < T_NIGHT_STARS) season = 'black'; else if (t >= T_NIGHT_STARS) season = 'night';
+
+            let tintState = 'normal';
+            if (season === 'winter') tintState = 'winter';
+            else if (season === 'spring') { if (t >= T_SPRING_DARK) tintState = 'dark-rain'; else if (t >= T_SPRING_MENDUNG) tintState = 'cloudy'; else tintState = 'spring'; } 
+            else if (season === 'summer') { if (t >= T_SUMMER_MENDUNG) tintState = 'dark-rain'; else tintState = 'summer'; } 
+            else if (season === 'autumn') { tintState = 'dark-rain'; } else if (season === 'black' || season === 'night') { tintState = 'night'; }
+
+            if (tintState !== currentTintState) { currentTintState = tintState; applyTint(tintState); }
+
+            if (season !== currentSeason) {
+                let oldSeason = currentSeason; currentSeason = season; initWeather(); 
+                if (season === 'spring') triggerEpicTransition('spring'); if (season === 'summer') triggerEpicTransition('summer'); 
+                if (season === 'black') { nightTransition.style.opacity = '1'; skyBg.className = 'season-black'; } 
+                else if (season === 'night') { skyBg.className = 'season-night'; nightTransition.style.opacity = '0'; } 
+                else { if (oldSeason !== 'black') skyBg.className = `season-${season}`; }
+            }
+
+            if (season === 'spring') { if (t >= T_SPRING_DARK) { stormOverlay.style.opacity = '0.8'; skyBg.className = 'season-spring-dark'; } else if (t >= T_SPRING_MENDUNG) { stormOverlay.style.opacity = '0.4'; skyBg.className = 'season-spring-dark'; } else if (t < T_SPRING_MENDUNG) { stormOverlay.style.opacity = '0'; skyBg.className = 'season-spring'; } }
+            if (season === 'summer') { if (t >= T_SUMMER_MENDUNG) { stormOverlay.style.opacity = '0.5'; skyBg.className = 'season-summer-dark'; } else { stormOverlay.style.opacity = '0'; skyBg.className = 'season-summer'; } }
+            if (season === 'autumn') { if (t < T_NIGHT_BLACK) { stormOverlay.style.opacity = '0.6'; skyBg.className = 'season-autumn-dark'; } }
+            if (season === 'black' || season === 'night') { stormOverlay.style.opacity = '0'; }
+
+            if (!isFinaleTriggered) {
+                let activeLyric = ""; for (let i = 0; i < lyrics.length; i++) { if (t >= lyrics[i].time) { activeLyric = lyrics[i].text; currentLyricIndex = i; } }
+                if (lyricText.innerText !== activeLyric && activeLyric !== "") { lyricText.classList.remove('active'); setTimeout(() => { lyricText.innerText = activeLyric; lyricText.classList.add('active'); }, 300); } else if (activeLyric === "" && currentLyricIndex === -1) { lyricText.classList.remove('active'); }
+            }
+
+            if (t >= T_NIGHT_STARS && !isFinaleTriggered) { isFinaleTriggered = true; lyricsContainer.style.opacity = '0'; setTimeout(() => { finaleContainer.classList.add('show'); }, 1000); }
+        }
+
+        function formatTime(seconds) { if(isNaN(seconds)) return "0:00"; const m = Math.floor(seconds / 60), s = Math.floor(seconds % 60); return `${m}:${s < 10 ? '0' : ''}${s}`; }
+
+        /* ============================================================
+           LOGIKA KHUSUS SPLASH SCREEN (KEMBANG API & TRANSISI)
+           ============================================================ */
+        const splashCanvas = document.getElementById('splash-canvas');
+        const sCtx = splashCanvas.getContext('2d');
+        let sW, sH, splashRockets = [], splashParticles = [], splashAnimId;
+        let isNotReadyCooldown = false;
+
+        function resizeSplashCanvas() {
+            sW = splashCanvas.width = window.innerWidth;
+            sH = splashCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeSplashCanvas);
+        resizeSplashCanvas();
+
+        function spawnSplashRocket() {
+            splashRockets.push({
+                x: Math.random() * sW,
+                y: sH,
+                targetY: Math.random() * (sH * 0.4) + sH * 0.1,
+                vx: (Math.random() - 0.5) * 2,
+                vy: -12,
+                color: '255, 215, 0' // Gold
+            });
+        }
+
+        function createSplashExplosion(x, y, color) {
+            const count = 50 + Math.random() * 30;
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 2;
+                splashParticles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1,
+                    decay: Math.random() * 0.02 + 0.015,
+                    size: Math.random() * 2.5 + 1.5,
+                    color: color
+                });
+            }
+        }
+
+        function animateSplash() {
+            sCtx.clearRect(0, 0, sW, sH);
+            
+            for (let i = splashRockets.length - 1; i >= 0; i--) {
+                const r = splashRockets[i];
+                r.x += r.vx;
+                r.y += r.vy;
+                
+                sCtx.beginPath();
+                sCtx.moveTo(r.x, r.y);
+                sCtx.lineTo(r.x - r.vx, r.y - r.vy + 15);
+                sCtx.strokeStyle = `rgba(${r.color}, 0.8)`;
+                sCtx.lineWidth = 2;
+                sCtx.stroke();
+
+                if (r.y <= r.targetY) {
+                    createSplashExplosion(r.x, r.y, r.color);
+                    splashRockets.splice(i, 1);
+                }
+            }
+            
+            for (let i = splashParticles.length - 1; i >= 0; i--) {
+                const p = splashParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.08; // gravity
+                p.vx *= 0.98;
+                p.life -= p.decay;
+
+                sCtx.beginPath();
+                sCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                sCtx.fillStyle = `rgba(${p.color}, ${p.life})`;
+                sCtx.shadowBlur = 8;
+                sCtx.shadowColor = `rgb(${p.color})`;
+                sCtx.fill();
+
+                if (p.life <= 0) {
+                    splashParticles.splice(i, 1);
+                }
+            }
+            sCtx.shadowBlur = 0;
+
+            if (splashRockets.length > 0 || splashParticles.length > 0) {
+                splashAnimId = requestAnimationFrame(animateSplash);
+            } else {
+                sCtx.clearRect(0, 0, sW, sH);
+                splashAnimId = null;
+            }
+        }
+
+        document.getElementById('btnNotReady').addEventListener('click', () => {
+            if (isNotReadyCooldown) return;
+            isNotReadyCooldown = true;
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                spawnSplashRocket();
+                if (Math.random() > 0.5) setTimeout(spawnSplashRocket, 100); // Double rocket for better effect
+                
+                if (!splashAnimId) animateSplash();
+                
+                count++;
+                if (count >= 10) { // 10 * 300ms = 3 seconds
+                    clearInterval(interval);
+                    setTimeout(() => { isNotReadyCooldown = false; }, 1000); // Cooldown 1s after 3s
+                }
+            }, 300);
+        });
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            // --- MEMASUKI FULLSCREEN SAAT KLIK ---
+            if (!document.fullscreenElement) {
+                const docElm = document.documentElement;
+                if (docElm.requestFullscreen) { docElm.requestFullscreen().catch(e => {}); }
+                else if (docElm.webkitRequestFullscreen) { docElm.webkitRequestFullscreen(); }
+            }
+            // -------------------------------------
+
+            splash.classList.add('hidden'); 
+            mainApp.classList.add('show');
+            audio.play().then(() => { iconPlay.style.display = 'none'; iconPause.style.display = 'block'; }).catch(e => console.log(e));
+            if (!animationFrameId) renderLoop(); applyTint('winter'); currentTintState = 'winter'; currentSeason = 'winter';
+            audio.addEventListener('loadedmetadata', () => { timeTotal.innerText = formatTime(audio.duration); });
+        });
+
+        /* ============================================================
+           PLAYER CONTROLS & INIT
+           ============================================================ */
+        setInterval(updateTime, 100);
+
+        playBtn.addEventListener('click', () => { if (audio.paused) { audio.play(); iconPlay.style.display = 'none'; iconPause.style.display = 'block'; } else { audio.pause(); iconPlay.style.display = 'block'; iconPause.style.display = 'none'; } });
+        prevBtn.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+        nextBtn.addEventListener('click', () => { audio.currentTime = Math.min(audio.duration || 239, audio.currentTime + 10); });
+        progressContainer.addEventListener('click', (e) => { const rect = progressContainer.getBoundingClientRect(); audio.currentTime = ((e.clientX - rect.left) / rect.width) * (audio.duration || 239); });
+
+        loadLyrics();
+    </script>
+</body>
+</html>
